@@ -29,14 +29,14 @@ variable "network_cidr" {
 
 # Using local provider to create app configuration
 resource "local_file" "app_config" {
-  filename = "${path.module}/outputs/app-config.json"
+  filename        = "${path.module}/app-config.json"
   content = jsonencode({
-    environment = "staging"
-    app_name = var.app_name
-    replicas = var.replicas
+    environment  = "staging"
+    app_name     = var.app_name
+    replicas     = var.replicas
     network_cidr = var.network_cidr
-    created_at = timestamp()
   })
+  file_permission = "0644"
 }
 
 # Simulate application deployment

@@ -4,13 +4,13 @@
 
 # Using local provider to create network configuration files
 resource "local_file" "network_config" {
-  filename = "${path.module}/outputs/network-config.json"
+  filename        = "${path.module}/network-config.json"
   content = jsonencode({
     environment  = var.environment
     network_cidr = var.network_cidr
     subnet_count = var.subnet_count
-    created_at   = timestamp()
   })
+  file_permission = "0644"
 }
 
 # Simulate network resources with null_resource

@@ -41,14 +41,14 @@ jobs:
         working-directory: terraform-problems/${{ matrix.environment }}/${{ matrix.module }}
         run: terraform apply -auto-approve
 
-      - name: Verify outputs exist
+      - name: Verify config files created
         working-directory: terraform-problems/${{ matrix.environment }}/${{ matrix.module }}
         run: |
-          if [ -d "outputs" ]; then
-            echo "Outputs directory created successfully"
-            ls -la outputs/
+          if [ -f "*-config.json" ]; then
+            echo "Config files created successfully"
+            ls -la *-config.json
           else
-            echo "Warning: outputs directory not found"
+            echo "Warning: config files not found"
           fi
 
   terragrunt-solution-test:

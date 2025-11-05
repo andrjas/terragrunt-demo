@@ -31,8 +31,8 @@ terraform.rc
 backend.tf
 provider.tf
 
-# Output directories created by modules
-**/outputs/*
+# Config files created by modules
+*-config.json
 
 # Lock files
 .terraform.lock.hcl
