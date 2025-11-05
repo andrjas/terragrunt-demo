@@ -44,11 +44,13 @@ jobs:
       - name: Verify config files created
         working-directory: terraform-problems/${{ matrix.environment }}/${{ matrix.module }}
         run: |
-          if [ -f "*-config.json" ]; then
-            echo "Config files created successfully"
+          echo "Checking for config files..."
+          ls -la *.json || echo "No JSON files found"
+          if compgen -G "*-config.json" > /dev/null; then
+            echo "✓ Config files created successfully"
             ls -la *-config.json
           else
-            echo "Warning: config files not found"
+            echo "✗ Warning: config files not found"
           fi
 
   terragrunt-solution-test:
@@ -94,10 +96,19 @@ jobs:
         working-directory: terragrunt-solution/environments/${{ matrix.environment }}
         run: |
           echo "Checking that network was created before app..."
+          echo "Current directory: $(pwd)"
+          echo "Directory contents:"
+          ls -laR
+          echo ""
+          echo "Looking for state files..."
+          find . -name "terraform.tfstate" -type f
+          echo ""
           if [ -f "network/terraform.tfstate" ] && [ -f "app/terraform.tfstate" ]; then
-            echo "Both modules created state files successfully"
+            echo "✓ Both modules created state files successfully"
           else
-            echo "Error: State files not created"
+            echo "✗ Error: State files not found in expected locations"
+            echo "Checking if state files exist elsewhere..."
+            find ../.. -name "terraform.tfstate" -type f || echo "No state files found anywhere"
             exit 1
           fi
 
@@ -128,7 +139,7 @@ jobs:
         id: terraform-count
         run: |
           echo "Counting Terraform files..."
-          TERRAFORM_FILES=$(find terraform-problems -name "*.tf" -o -name "*.tfvars" | wc -l)
+          TERRAFORM_FILES=$(find terraform-problems \( -name "*.tf" -o -name "*.tfvars" \) | wc -l)
           echo "terraform_files=$TERRAFORM_FILES" >> $GITHUB_OUTPUT
           echo "Terraform approach uses $TERRAFORM_FILES files"
 
@@ -185,12 +196,21 @@ jobs:
         working-directory: terragrunt-solution/environments
         run: |
           echo "Verifying all deployments..."
+          echo "Searching for all state files..."
+          find . -name "terraform.tfstate" -type f
+          echo ""
           for env in dev staging prod; do
             echo "Checking $env environment..."
             if [ -f "$env/network/terraform.tfstate" ] && [ -f "$env/app/terraform.tfstate" ]; then
               echo "✓ $env environment deployed successfully"
+              echo "  - network state: $(stat -c%s $env/network/terraform.tfstate) bytes"
+              echo "  - app state: $(stat -c%s $env/app/terraform.tfstate) bytes"
             else
               echo "✗ $env environment deployment failed"
+              echo "  - network state exists: $([ -f $env/network/terraform.tfstate ] && echo 'yes' || echo 'no')"
+              echo "  - app state exists: $([ -f $env/app/terraform.tfstate ] && echo 'yes' || echo 'no')"
+              echo "Directory contents for $env:"
+              ls -la $env/
               exit 1
             fi
           done
