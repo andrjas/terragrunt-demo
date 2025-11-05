@@ -1,8 +1,8 @@
 # Dev App Module Configuration
 
-# Include the environment-specific configuration
-include "env" {
-  path = find_in_parent_folders("terragrunt.hcl")
+# Include the root terragrunt configuration
+include "root" {
+  path = "../../../terragrunt.hcl"
 }
 
 # Point to the shared app module
@@ -23,6 +23,7 @@ dependency "network" {
 
 # Module-specific inputs
 inputs = {
+  environment  = "dev"
   app_name     = "demo-app"
   replicas     = 2
   # SOLUTION: Automatically use output from network module - no manual copying!

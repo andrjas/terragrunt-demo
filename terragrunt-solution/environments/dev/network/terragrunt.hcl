@@ -1,8 +1,8 @@
 # Dev Network Module Configuration
 
-# Include the environment-specific configuration
-include "env" {
-  path = find_in_parent_folders("terragrunt.hcl")
+# Include the root terragrunt configuration
+include "root" {
+  path = "../../../terragrunt.hcl"
 }
 
 # Point to the shared network module
@@ -12,6 +12,7 @@ terraform {
 
 # Module-specific inputs
 inputs = {
+  environment  = "dev"
   network_cidr = "10.0.0.0/16"
   subnet_count = 2
 }
