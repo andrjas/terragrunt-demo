@@ -24,6 +24,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.0
+          terraform_wrapper: false
 
       - name: Terraform Init - ${{ matrix.environment }}/${{ matrix.module }}
         working-directory: terraform-problems/${{ matrix.environment }}/${{ matrix.module }}
@@ -68,6 +69,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.0
+          terraform_wrapper: false
 
       - name: Setup Terragrunt
         run: |
@@ -173,6 +175,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.0
+          terraform_wrapper: false
 
       - name: Setup Terragrunt
         run: |
