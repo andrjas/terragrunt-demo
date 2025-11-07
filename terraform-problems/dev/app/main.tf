@@ -21,10 +21,6 @@ terraform {
 
 # PROBLEM: No automatic dependency management
 # We need to manually pass network outputs or use data sources
-variable "network_cidr" {
-  description = "Network CIDR - must be manually copied from network module"
-  type        = string
-}
 
 # Using local provider to create app configuration
 resource "local_file" "app_config" {
