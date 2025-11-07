@@ -105,12 +105,18 @@ jobs:
           echo "Looking for state files..."
           find . -name "terraform.tfstate" -type f
           echo ""
-          if [ -f "network/terraform.tfstate" ] && [ -f "app/terraform.tfstate" ]; then
+          # Terragrunt stores state files in .terragrunt-cache directories
+          NETWORK_STATE=$(find network/.terragrunt-cache -name "terraform.tfstate" -type f | head -1)
+          APP_STATE=$(find app/.terragrunt-cache -name "terraform.tfstate" -type f | head -1)
+
+          if [ -n "$NETWORK_STATE" ] && [ -n "$APP_STATE" ]; then
             echo "✓ Both modules created state files successfully"
+            echo "  - network state: $NETWORK_STATE"
+            echo "  - app state: $APP_STATE"
           else
-            echo "✗ Error: State files not found in expected locations"
-            echo "Checking if state files exist elsewhere..."
-            find ../.. -name "terraform.tfstate" -type f || echo "No state files found anywhere"
+            echo "✗ Error: State files not found in .terragrunt-cache directories"
+            echo "Network state found: ${NETWORK_STATE:-no}"
+            echo "App state found: ${APP_STATE:-no}"
             exit 1
           fi
 
@@ -204,14 +210,18 @@ jobs:
           echo ""
           for env in dev staging prod; do
             echo "Checking $env environment..."
-            if [ -f "$env/network/terraform.tfstate" ] && [ -f "$env/app/terraform.tfstate" ]; then
+            # Terragrunt stores state files in .terragrunt-cache directories
+            NETWORK_STATE=$(find $env/network/.terragrunt-cache -name "terraform.tfstate" -type f 2>/dev/null | grep -v ".terraform/" | head -1)
+            APP_STATE=$(find $env/app/.terragrunt-cache -name "terraform.tfstate" -type f 2>/dev/null | grep -v ".terraform/" | head -1)
+
+            if [ -n "$NETWORK_STATE" ] && [ -n "$APP_STATE" ]; then
               echo "✓ $env environment deployed successfully"
-              echo "  - network state: $(stat -c%s $env/network/terraform.tfstate) bytes"
-              echo "  - app state: $(stat -c%s $env/app/terraform.tfstate) bytes"
+              echo "  - network state: $(stat -c%s "$NETWORK_STATE") bytes at $NETWORK_STATE"
+              echo "  - app state: $(stat -c%s "$APP_STATE") bytes at $APP_STATE"
             else
               echo "✗ $env environment deployment failed"
-              echo "  - network state exists: $([ -f $env/network/terraform.tfstate ] && echo 'yes' || echo 'no')"
-              echo "  - app state exists: $([ -f $env/app/terraform.tfstate ] && echo 'yes' || echo 'no')"
+              echo "  - network state found: ${NETWORK_STATE:-no}"
+              echo "  - app state found: ${APP_STATE:-no}"
               echo "Directory contents for $env:"
               ls -la $env/
               exit 1
